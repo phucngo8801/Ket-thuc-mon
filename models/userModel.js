@@ -1,5 +1,5 @@
 const mongoose = require('mongoose'); // Erase if already required
-
+const bcrypt = require('bcrypt')
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema({
     firstname:{
@@ -27,6 +27,15 @@ var userSchema = new mongoose.Schema({
         required:true,
     },
 });
+userSchema.pre('save', async  function (next){
+    // xác lập mã hóa mật khẩu
+    const salt = bcrypt.genSaltSync(10);
+    this.password = await bcrypt.hash(this.password, salt);});
+    // xác nhận mật khẩu xem có đúng với mình đã nhập hay là không
+   userSchema.methods.isPasswordMatched = async function (enteredPassword){
+    return await bcrypt.compare(enteredPassword, this.password);
+   };
+
 
 //Export the model
 module.exports = mongoose.model('User', userSchema);
