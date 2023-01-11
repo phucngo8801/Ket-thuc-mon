@@ -26,16 +26,34 @@ var userSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
-});
-userSchema.pre('save', async  function (next){
-    // xác lập mã hóa mật khẩu
-    const salt = bcrypt.genSaltSync(10);
-    this.password = await bcrypt.hash(this.password, salt);});
-    // xác nhận mật khẩu xem có đúng với mình đã nhập hay là không
-   userSchema.methods.isPasswordMatched = async function (enteredPassword){
-    return await bcrypt.compare(enteredPassword, this.password);
-   };
+    // tạo admin 
+    role:{
+        type: String,
+        default: "user",
 
+    },
+    cart: {
+        type: Array,
+        default: [],
+    },
+    address : [{type: ObjectId , ref: "Address"}],
+    wishlist: [{type: Object, ref: "Product"}],
+
+},
+{
+    timestamps: true,
+}
+);
+userSchema.pre("save", async function(next) {
+    const salt = await bcrypt.genSaltSync(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  })
+  
+  // kiem tra password de login
+  userSchema.methods.isPasswordMatched = async function(enteredPassword){
+    return await bcrypt.compare(enteredPassword, this.password);
+  }
+  
 
 //Export the model
 module.exports = mongoose.model('User', userSchema);
